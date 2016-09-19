@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace TDSPaster
@@ -24,17 +17,17 @@ namespace TDSPaster
         string elevationName3;
         string boilerName;
         string inspectionYear;
+
         public Form1()
         {
             InitializeComponent();
             //In order to do some basic validation I require the user to select a file before the paste button is enabled
-            PasteDataButton.Enabled = false;
-            
+            PasteDataButton.Enabled = false; 
         }
         //cleaning up the many types of comments that are not TDS compatable
         public string dataValidator(string readingValue)
         {   
-            char[] charsToTrim = { '.', 'V' };//Place any characters that should not go into the TDS file here
+            char[] charsToTrim = { '.' };//Place any characters that should not go into the TDS file here
             string goodData;
             //the following two strings encase the numeric value
             string quote = "\"";
@@ -44,8 +37,7 @@ namespace TDSPaster
             {
                 readingValue = readingValue.Trim(charsToTrim);
                 readingValue = quote + readingValue + spaceQuote;
-                return readingValue;
-                
+                return readingValue;  
             }
             //if there is only text or more than 1 non integer character the else statement will execute and return 4 spaces to be written to the TDS file
             else
@@ -53,18 +45,15 @@ namespace TDSPaster
                 goodData = @"""    """;
                 return goodData;
             }
-
         }
 
         //copys the data from the clipboard and other housekeeping things
         private void PasteDataButton_Click(object sender, EventArgs e)
         {
-            
             //paste data from clipboard
             DataObject o = (DataObject)Clipboard.GetDataObject();
             if (o.GetDataPresent(DataFormats.Text))
             {
-                
                 string[] pastedRows = Regex.Split(o.GetData(DataFormats.Text).ToString().TrimEnd("\r\n".ToCharArray()), "\r\n");
                 int j = 0;
                 
@@ -103,18 +92,17 @@ namespace TDSPaster
         {
             PasteDataButton.Enabled = true;
             // Create an instance of the open file dialog box.
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-
-            // Set filter options and filter index.
-            openFileDialog1.Filter = "Text Files (.txt)|*.txt|All Files (*.*)|*.*";
-            openFileDialog1.FilterIndex = 2;
-
-            openFileDialog1.Multiselect = true;
+            OpenFileDialog openFileDialog1 = new OpenFileDialog
+            {
+                // Set filter options and filter index.
+                Filter = "Text Files (.txt)|*.txt|All Files (*.*)|*.*",
+                FilterIndex = 2,
+                Multiselect = true
+            };
 
             // Call the ShowDialog method to show the dialog box.
             DialogResult userClickedOK = openFileDialog1.ShowDialog();
            
-
             // Process input if the user clicked OK.
             if (userClickedOK == DialogResult.OK)
             {
@@ -124,10 +112,10 @@ namespace TDSPaster
                 using (StreamReader reader = new StreamReader(fileStream))
                 {
                     string filename = openFileDialog1.FileName;
-
                     fileLocation = filename;                  
                 }
                 fileStream.Close();
+
                 // Code that is going to fetch the tube count and other goodies!
                 string line;
                 int counter = 0;
@@ -141,7 +129,7 @@ namespace TDSPaster
                 reader3.Close();
 
                 StreamReader reader2 = new StreamReader(fileLocation);
-                //This could likly be made into a class, I just want to get it working first. Feel free to do it, or not :) haha
+                //This could likely be made into a class, I just want to get it working first. Feel free to do it, or not :) haha
                 counter = 0;
                 //This is grabing the informaion about the elevation that has been selected to be overwritten
                 //it should allow the user to clearly see at a glance what they are about to overwrite
@@ -185,10 +173,10 @@ namespace TDSPaster
                 }
                 //outputting the elevation to the proper textboxes for the user to see,
                 //I still need to run this data through a regex to clean it up. that will be on my todo
-                millTextbox.Text = millName + location.ToString();
-                inspectionYearTextBox.Text = inspectionYear.ToString();
-                elevationTextBox.Text = elevationName1 + elevationName2 + elevationName3.ToString();
-                SectionTextBox.Text = sectionName.ToString();
+                millTextbox.Text = millName + location;
+                inspectionYearTextBox.Text = inspectionYear;
+                elevationTextBox.Text = elevationName1 + elevationName2 + elevationName3;
+                SectionTextBox.Text = sectionName;
                 
                 reader2.Close();
             }
@@ -204,7 +192,6 @@ namespace TDSPaster
             {
                 get { return _globalVar; }
                 set { _globalVar = value; }
-
             }
             public static int GlobalCounter
             {
@@ -232,8 +219,7 @@ namespace TDSPaster
             int leftCounter = 0;
             int centerCounter = 0;
             int rightCounter = 0;
-
-            
+ 
             //outputting the array values to the TDS file
             using (StreamWriter writer = new StreamWriter(fileLocation))
             {
@@ -265,8 +251,7 @@ namespace TDSPaster
 
                         writer.WriteLine(returnedValue);
                             rightCounter++;
-                     }
-                        
+                     }    
                     else 
                     {//not 100% sure I think this closes the stream once end of file is reached and saves it also
                         writer.WriteLine(lines[currentLine - 1]);
@@ -276,13 +261,13 @@ namespace TDSPaster
             MessageBox.Show("If nothing caught fire the file was transfered!");
             //The following lines are for debugging only
             if (sublimeCheckBox.Checked)
-            {
-                
+            { 
                 ProcessStartInfo pi = new ProcessStartInfo(fileLocation);
                 pi.Arguments = Path.GetFileName(fileLocation);
                 pi.UseShellExecute = true;
                 pi.WorkingDirectory = Path.GetDirectoryName(fileLocation);
-                pi.FileName = "D:\\Apps\\Sublime\\Sublime Text 3\\sublime_text.exe";//you need to change your path to your sublime app
+                //pi.FileName = "D:\\Apps\\Sublime\\Sublime Text 3\\sublime_text.exe";//you need to change your path to your sublime app
+                pi.FileName = "D:\\Program Files\\Sublime Text 3"; //Tyler path
                 pi.Verb = "OPEN";
                 Process.Start(pi);
             }
