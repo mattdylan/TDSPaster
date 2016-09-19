@@ -16,18 +16,30 @@ namespace TDSPaster
     public partial class Form1 : Form
     {       
         string fileLocation;
+        string location;
+        string millName;
+        string sectionName;
+        string elevationName1;
+        string elevationName2;
+        string elevationName3;
+        string boilerName;
+        string inspectionYear;
         public Form1()
         {
             InitializeComponent();
+            //In order to do some basic validation I require the user to select a file before the paste button is enabled
             PasteDataButton.Enabled = false;
+            
         }
         //cleaning up the many types of comments that are not TDS compatable
         public string dataValidator(string readingValue)
-        {
-            char[] charsToTrim = { '.', 'V' };
+        {   
+            char[] charsToTrim = { '.', 'V' };//Place any characters that should not go into the TDS file here
             string goodData;
+            //the following two strings encase the numeric value
             string quote = "\"";
             string spaceQuote = " \"";
+            //if the data is numbers with a single character the if statement will execute.           
             if (Regex.IsMatch(readingValue, @"\d"))
             {
                 readingValue = readingValue.Trim(charsToTrim);
@@ -35,6 +47,7 @@ namespace TDSPaster
                 return readingValue;
                 
             }
+            //if there is only text or more than 1 non integer character the else statement will execute and return 4 spaces to be written to the TDS file
             else
             {
                 goodData = @"""    """;
@@ -43,34 +56,29 @@ namespace TDSPaster
 
         }
 
+        //copys the data from the clipboard and other housekeeping things
         private void PasteDataButton_Click(object sender, EventArgs e)
         {
+            
             //paste data from clipboard
             DataObject o = (DataObject)Clipboard.GetDataObject();
             if (o.GetDataPresent(DataFormats.Text))
             {
-                if (dataGridView1.RowCount > 0)
-                    dataGridView1.Rows.Clear();
-
-                if (dataGridView1.ColumnCount > 0)
-                    dataGridView1.Columns.Clear();
-
-                bool columnsAdded = false;
+                
                 string[] pastedRows = Regex.Split(o.GetData(DataFormats.Text).ToString().TrimEnd("\r\n".ToCharArray()), "\r\n");
                 int j = 0;
-                foreach (string pastedRow in pastedRows)
+                
+                //Manually adding the tube columns to the datagrid view (this is required before data can be added
+                for (int b = 1; b <= Global.GlobalVar; b++)
                 {
+                    string tubeColumn = "Tube";
+                    dataGridView1.Columns.Add(tubeColumn + b, b.ToString());
+                }
+                //This is the code that adds the copied data to the datagrid view, not 100% on how it works.
+                foreach (string pastedRow in pastedRows)
+                {                   
                     string[] pastedRowCells = pastedRow.Split(new char[] { '\t' });
-
-                    if (!columnsAdded)
-                    {
-                        for (int i = 0; i < pastedRowCells.Length; i++)
-                            dataGridView1.Columns.Add("col" + i, pastedRowCells[i]);
-
-                        columnsAdded = true;
-                        continue;
-                    }
-
+                                        
                     dataGridView1.Rows.Add();
                     int myRowIndex = dataGridView1.Rows.Count - 1;
 
@@ -81,13 +89,16 @@ namespace TDSPaster
                     }
                     j++;
                 }
-            }
+            }   
+            //Simple data validation. If the amount of tubes pasted does not equal the amount of tubes for the actual section
+            // the user is given an alert. Lots of room for improvement here.         
             if (Global.GlobalVar != dataGridView1.ColumnCount)
             {
                 MessageBox.Show("Oh no! It seems that you have pasted an amount of tubes that does not match the tube count for the section! If you continue the program will crash!");
             }
         }
 
+        //gathers the information for the elevation you want to write to
         private void SelectFileButton_Click(object sender, EventArgs e)
         {
             PasteDataButton.Enabled = true;
@@ -102,7 +113,7 @@ namespace TDSPaster
 
             // Call the ShowDialog method to show the dialog box.
             DialogResult userClickedOK = openFileDialog1.ShowDialog();
-
+           
 
             // Process input if the user clicked OK.
             if (userClickedOK == DialogResult.OK)
@@ -120,24 +131,70 @@ namespace TDSPaster
                 // Code that is going to fetch the tube count and other goodies!
                 string line;
                 int counter = 0;
-
-                StreamReader reader2 = new StreamReader(fileLocation);
-
-
-                while ((line = reader2.ReadLine()) != null)
+                StreamReader reader3 = new StreamReader(fileLocation);
+                while ((line = reader3.ReadLine()) != null)
                 {
-                    previewListBox.Items.Add(line);
                     counter++;
                 }
                 float finalTubeCount = ((counter - 18f) / 3f);
                 Global.GlobalVar = finalTubeCount;
-                Debug.WriteLine("Tube count:" + finalTubeCount);
+                reader3.Close();
+
+                StreamReader reader2 = new StreamReader(fileLocation);
+                //This could likly be made into a class, I just want to get it working first. Feel free to do it, or not :) haha
+                counter = 0;
+                //This is grabing the informaion about the elevation that has been selected to be overwritten
+                //it should allow the user to clearly see at a glance what they are about to overwrite
+                while ((line = reader2.ReadLine()) != null)
+                {                    
+                    previewListBox.Items.Add(line);
+                                       
+                    if (counter == 0)
+                    {
+                        millName = line;
+                    }
+                    if (counter == 1)
+                    {
+                        boilerName = line;
+                    }
+                    if (counter == 2)
+                    {
+                        sectionName = line;
+                    }
+                    if (counter == 3)
+                    {
+                        elevationName2 = line;
+                    }
+                    if (counter == 4)
+                    {
+                        elevationName1 = line;
+                    }
+                    if (counter == Global.GlobalVar +6)
+                    {
+                        location = line;
+                    }
+                    if (counter == Global.GlobalVar +7)
+                    {
+                        inspectionYear = line;
+                    } 
+                    if (counter == Global.GlobalVar +10)
+                    {
+                        elevationName3 = line;
+                    }
+                    counter++;
+                }
+                //outputting the elevation to the proper textboxes for the user to see,
+                //I still need to run this data through a regex to clean it up. that will be on my todo
+                millTextbox.Text = millName + location.ToString();
+                inspectionYearTextBox.Text = inspectionYear.ToString();
+                elevationTextBox.Text = elevationName1 + elevationName2 + elevationName3.ToString();
+                SectionTextBox.Text = sectionName.ToString();
+                
                 reader2.Close();
             }
         }
 
-        //creating the class that will allow for global variable use.
-        //this is for passing the tube count to the conversion routine
+        //Class that is being used to pass the tube count around the program
         static class Global
         {
             private static float _globalVar;
@@ -156,6 +213,7 @@ namespace TDSPaster
             }
         }
         
+        //data from the datagridview is stored in an array and written to the TDS file the user has selected.
         private void SaveFileButton_Click(object sender, EventArgs e)
         {
             //creating the array, this is dynamic, the array will match the number of columns and rows
@@ -216,6 +274,23 @@ namespace TDSPaster
                 }
             }
             MessageBox.Show("If nothing caught fire the file was transfered!");
+            //The following lines are for debugging only
+            if (sublimeCheckBox.Checked)
+            {
+                
+                ProcessStartInfo pi = new ProcessStartInfo(fileLocation);
+                pi.Arguments = Path.GetFileName(fileLocation);
+                pi.UseShellExecute = true;
+                pi.WorkingDirectory = Path.GetDirectoryName(fileLocation);
+                pi.FileName = "D:\\Apps\\Sublime\\Sublime Text 3\\sublime_text.exe";//you need to change your path to your sublime app
+                pi.Verb = "OPEN";
+                Process.Start(pi);
+            }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
