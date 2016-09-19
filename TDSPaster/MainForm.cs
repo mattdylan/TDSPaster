@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace TDSPaster
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {       
         string fileLocation;
         string location;
@@ -17,15 +17,17 @@ namespace TDSPaster
         string elevationName3;
         string boilerName;
         string inspectionYear;
+        int tubeCount;
 
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
             //In order to do some basic validation I require the user to select a file before the paste button is enabled
             PasteDataButton.Enabled = false; 
         }
+
         //cleaning up the many types of comments that are not TDS compatable
-        public string dataValidator(string readingValue)
+        public string DataValidator(string readingValue)
         {   
             char[] charsToTrim = { '.' };//Place any characters that should not go into the TDS file here
             string goodData;
@@ -40,14 +42,65 @@ namespace TDSPaster
                 return readingValue;  
             }
             //if there is only text or more than 1 non integer character the else statement will execute and return 4 spaces to be written to the TDS file
-            else
+            goodData = @"""    """;
+            return goodData;
+        }
+
+        private static string RemoveNonAlpha(string line)
+        {
+            //Replace all multiple spaces with just one space, then remove the quotes.
+            var newLine = Regex.Replace(line, @"\s+", " ");
+            newLine = newLine.Replace("\"", string.Empty);
+            return newLine;
+        }
+
+        private void SetInspectionInfo(string line, int counter)
+        {
+            string newLine;
+
+            if (counter == 0)
             {
-                goodData = @"""    """;
-                return goodData;
+                newLine = RemoveNonAlpha(line);
+                millName = newLine;
+            }
+            if (counter == 1)
+            {
+                newLine = RemoveNonAlpha(line);
+                boilerName = newLine;
+            }
+            if (counter == 2)
+            {
+                newLine = RemoveNonAlpha(line);
+                sectionName = newLine;
+            }
+            if (counter == 3)
+            {
+                newLine = RemoveNonAlpha(line);
+                elevationName2 = newLine;
+            }
+            if (counter == 4)
+            {
+                newLine = RemoveNonAlpha(line);
+                elevationName1 = newLine;
+            }
+            if (counter == tubeCount +6)
+            {
+                newLine = RemoveNonAlpha(line);
+                location = newLine;
+            }
+            if (counter == tubeCount +7)
+            {
+                newLine = RemoveNonAlpha(line);
+                inspectionYear = newLine;
+            } 
+            if (counter == tubeCount +10)
+            {
+                newLine = RemoveNonAlpha(line);
+                elevationName3 = newLine;
             }
         }
 
-        //copys the data from the clipboard and other housekeeping things
+        //copies the data from the clipboard and other housekeeping things
         private void PasteDataButton_Click(object sender, EventArgs e)
         {
             //paste data from clipboard
@@ -58,7 +111,7 @@ namespace TDSPaster
                 int j = 0;
                 
                 //Manually adding the tube columns to the datagrid view (this is required before data can be added
-                for (int b = 1; b <= Global.GlobalVar; b++)
+                for (int b = 1; b <= tubeCount; b++)
                 {
                     string tubeColumn = "Tube";
                     dataGridView1.Columns.Add(tubeColumn + b, b.ToString());
@@ -81,7 +134,7 @@ namespace TDSPaster
             }   
             //Simple data validation. If the amount of tubes pasted does not equal the amount of tubes for the actual section
             // the user is given an alert. Lots of room for improvement here.         
-            if (Global.GlobalVar != dataGridView1.ColumnCount)
+            if (tubeCount != dataGridView1.ColumnCount)
             {
                 MessageBox.Show("Oh no! It seems that you have pasted an amount of tubes that does not match the tube count for the section! If you continue the program will crash!");
             }
@@ -90,7 +143,7 @@ namespace TDSPaster
         //gathers the information for the elevation you want to write to
         private void SelectFileButton_Click(object sender, EventArgs e)
         {
-            PasteDataButton.Enabled = true;
+            
             // Create an instance of the open file dialog box.
             OpenFileDialog openFileDialog1 = new OpenFileDialog
             {
@@ -101,11 +154,13 @@ namespace TDSPaster
             };
 
             // Call the ShowDialog method to show the dialog box.
-            DialogResult userClickedOK = openFileDialog1.ShowDialog();
-           
+            DialogResult userClickedOk = openFileDialog1.ShowDialog();
+
             // Process input if the user clicked OK.
-            if (userClickedOK == DialogResult.OK)
+            if (userClickedOk == DialogResult.OK)
             {
+                PasteDataButton.Enabled = true;
+
                 // Open the selected file to read.
                 Stream fileStream = openFileDialog1.OpenFile();
 
@@ -120,56 +175,23 @@ namespace TDSPaster
                 string line;
                 int counter = 0;
                 StreamReader reader3 = new StreamReader(fileLocation);
-                while ((line = reader3.ReadLine()) != null)
+                while (reader3.ReadLine() != null)
                 {
                     counter++;
                 }
-                float finalTubeCount = ((counter - 18f) / 3f);
-                Global.GlobalVar = finalTubeCount;
+                int finalTubeCount = (counter - 18) / 3;
+                tubeCount = finalTubeCount;
                 reader3.Close();
 
                 StreamReader reader2 = new StreamReader(fileLocation);
-                //This could likely be made into a class, I just want to get it working first. Feel free to do it, or not :) haha
                 counter = 0;
                 //This is grabing the informaion about the elevation that has been selected to be overwritten
                 //it should allow the user to clearly see at a glance what they are about to overwrite
                 while ((line = reader2.ReadLine()) != null)
                 {                    
                     previewListBox.Items.Add(line);
-                                       
-                    if (counter == 0)
-                    {
-                        millName = line;
-                    }
-                    if (counter == 1)
-                    {
-                        boilerName = line;
-                    }
-                    if (counter == 2)
-                    {
-                        sectionName = line;
-                    }
-                    if (counter == 3)
-                    {
-                        elevationName2 = line;
-                    }
-                    if (counter == 4)
-                    {
-                        elevationName1 = line;
-                    }
-                    if (counter == Global.GlobalVar +6)
-                    {
-                        location = line;
-                    }
-                    if (counter == Global.GlobalVar +7)
-                    {
-                        inspectionYear = line;
-                    } 
-                    if (counter == Global.GlobalVar +10)
-                    {
-                        elevationName3 = line;
-                    }
-                    counter++;
+                    SetInspectionInfo(line, counter);
+                    counter++; 
                 }
                 //outputting the elevation to the proper textboxes for the user to see,
                 //I still need to run this data through a regex to clean it up. that will be on my todo
@@ -179,24 +201,6 @@ namespace TDSPaster
                 SectionTextBox.Text = sectionName;
                 
                 reader2.Close();
-            }
-        }
-
-        //Class that is being used to pass the tube count around the program
-        static class Global
-        {
-            private static float _globalVar;
-            private static int _globalCounter;
-
-            public static float GlobalVar
-            {
-                get { return _globalVar; }
-                set { _globalVar = value; }
-            }
-            public static int GlobalCounter
-            {
-                get { return _globalCounter; }
-                set { _globalCounter = value; }
             }
         }
         
@@ -225,29 +229,29 @@ namespace TDSPaster
             {
                 for (int currentLine = 1; currentLine <= lines.Length; ++currentLine)
                 {    //printing left readings to file first             
-                     if (currentLine >= 6 && currentLine <= (Global.GlobalVar +5))
+                     if (currentLine >= 6 && currentLine <= (tubeCount +5))
                      {
                         string value = readingValueArray[0, leftCounter];
                         //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
-                        string returnedValue = dataValidator(value);
+                        string returnedValue = DataValidator(value);
                         
                         writer.WriteLine(returnedValue);
                         leftCounter++;
                      }//printing center readings
-                    else if (currentLine > (Global.GlobalVar + 11) && currentLine <= ((Global.GlobalVar * 2) + 11))
+                    else if (currentLine > (tubeCount + 11) && currentLine <= ((tubeCount * 2) + 11))
                     {
                         string value = readingValueArray[1, centerCounter];
                         //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
-                        string returnedValue = dataValidator(value);
+                        string returnedValue = DataValidator(value);
 
                         writer.WriteLine(returnedValue);
                         centerCounter++;
                     }//printing right readings
-                    else if (currentLine > ((Global.GlobalVar * 2) + 17) && currentLine <= ((Global.GlobalVar * 3) + 17))
+                    else if (currentLine > tubeCount * 2 + 17 && currentLine <= ((tubeCount * 3) + 17))
                      {
                         string value = readingValueArray[2, rightCounter];
                         //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
-                        string returnedValue = dataValidator(value);
+                        string returnedValue = DataValidator(value);
 
                         writer.WriteLine(returnedValue);
                             rightCounter++;
@@ -259,24 +263,15 @@ namespace TDSPaster
                 }
             }
             MessageBox.Show("If nothing caught fire the file was transfered!");
-            //The following lines are for debugging only
+            
+            //Reset the tube count
+            tubeCount = 0;
+
+            //The following lines are for debugging only. 
             if (sublimeCheckBox.Checked)
-            { 
-                ProcessStartInfo pi = new ProcessStartInfo(fileLocation);
-                pi.Arguments = Path.GetFileName(fileLocation);
-                pi.UseShellExecute = true;
-                pi.WorkingDirectory = Path.GetDirectoryName(fileLocation);
-                //pi.FileName = "D:\\Apps\\Sublime\\Sublime Text 3\\sublime_text.exe";//you need to change your path to your sublime app
-                pi.FileName = "D:\\Program Files\\Sublime Text 3"; //Tyler path
-                pi.Verb = "OPEN";
-                Process.Start(pi);
+            {
+                Util.OpenInSublime(fileLocation);
             }
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
         }
     }
 }
-
