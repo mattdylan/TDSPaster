@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -56,6 +55,7 @@ namespace TDSPaster
 
         private void SetInspectionInfo(string line, int counter)
         {
+            //Accepts the line from reading the TDS file, formats it and stores the info in variables
             string newLine;
 
             if (counter == 0)
@@ -272,6 +272,11 @@ namespace TDSPaster
             {
                 Util.OpenInSublime(fileLocation);
             }
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
