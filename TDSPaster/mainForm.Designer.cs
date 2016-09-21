@@ -43,14 +43,24 @@
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
+            this.rowLeftLabel = new System.Windows.Forms.Label();
+            this.rowCenterLabel = new System.Windows.Forms.Label();
+            this.rowRightLabel = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.sublimeCheckBox = new System.Windows.Forms.CheckBox();
             this.singleRowRadioButton = new System.Windows.Forms.RadioButton();
-            this.trippleRowRadioButton = new System.Windows.Forms.RadioButton();
+            this.tripleRowRadioButton = new System.Windows.Forms.RadioButton();
+            this.colRightLabel = new System.Windows.Forms.Label();
+            this.colCenterLabel = new System.Windows.Forms.Label();
+            this.colLeftLabel = new System.Windows.Forms.Label();
+            this.clearAllButton = new System.Windows.Forms.Button();
+            this.commentGroupBox = new System.Windows.Forms.GroupBox();
+            this.transposeCheckBox = new System.Windows.Forms.CheckBox();
+            this.beamRadioButton = new System.Windows.Forms.RadioButton();
+            this.datumRadioButton = new System.Windows.Forms.RadioButton();
+            this.dartRadioButton = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            this.commentGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // dataGridView1
@@ -58,7 +68,7 @@
             this.dataGridView1.AllowUserToAddRows = false;
             this.dataGridView1.AllowUserToDeleteRows = false;
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(64, 230);
+            this.dataGridView1.Location = new System.Drawing.Point(64, 323);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.ReadOnly = true;
             this.dataGridView1.Size = new System.Drawing.Size(818, 263);
@@ -185,37 +195,37 @@
             this.label6.TabIndex = 14;
             this.label6.Text = "Selected file preview";
             // 
-            // label7
+            // rowLeftLabel
             // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(33, 250);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(25, 13);
-            this.label7.TabIndex = 15;
-            this.label7.Text = "Left";
+            this.rowLeftLabel.AutoSize = true;
+            this.rowLeftLabel.Location = new System.Drawing.Point(33, 329);
+            this.rowLeftLabel.Name = "rowLeftLabel";
+            this.rowLeftLabel.Size = new System.Drawing.Size(25, 13);
+            this.rowLeftLabel.TabIndex = 15;
+            this.rowLeftLabel.Text = "Left";
             // 
-            // label8
+            // rowCenterLabel
             // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(20, 272);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(38, 13);
-            this.label8.TabIndex = 16;
-            this.label8.Text = "Center";
+            this.rowCenterLabel.AutoSize = true;
+            this.rowCenterLabel.Location = new System.Drawing.Point(20, 351);
+            this.rowCenterLabel.Name = "rowCenterLabel";
+            this.rowCenterLabel.Size = new System.Drawing.Size(38, 13);
+            this.rowCenterLabel.TabIndex = 16;
+            this.rowCenterLabel.Text = "Center";
             // 
-            // label9
+            // rowRightLabel
             // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(26, 297);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(32, 13);
-            this.label9.TabIndex = 17;
-            this.label9.Text = "Right";
+            this.rowRightLabel.AutoSize = true;
+            this.rowRightLabel.Location = new System.Drawing.Point(26, 376);
+            this.rowRightLabel.Name = "rowRightLabel";
+            this.rowRightLabel.Size = new System.Drawing.Size(32, 13);
+            this.rowRightLabel.TabIndex = 17;
+            this.rowRightLabel.Text = "Right";
             // 
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(12, 215);
+            this.label10.Location = new System.Drawing.Point(61, 238);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(184, 13);
             this.label10.TabIndex = 18;
@@ -235,36 +245,136 @@
             // 
             this.singleRowRadioButton.AutoSize = true;
             this.singleRowRadioButton.Checked = true;
-            this.singleRowRadioButton.Location = new System.Drawing.Point(203, 210);
+            this.singleRowRadioButton.Location = new System.Drawing.Point(64, 258);
             this.singleRowRadioButton.Name = "singleRowRadioButton";
             this.singleRowRadioButton.Size = new System.Drawing.Size(79, 17);
             this.singleRowRadioButton.TabIndex = 20;
             this.singleRowRadioButton.TabStop = true;
             this.singleRowRadioButton.Text = "Single Row";
             this.singleRowRadioButton.UseVisualStyleBackColor = true;
+            this.singleRowRadioButton.CheckedChanged += new System.EventHandler(this.singleRowRadioButton_CheckedChanged);
             // 
-            // trippleRowRadioButton
+            // tripleRowRadioButton
             // 
-            this.trippleRowRadioButton.AutoSize = true;
-            this.trippleRowRadioButton.Location = new System.Drawing.Point(286, 210);
-            this.trippleRowRadioButton.Name = "trippleRowRadioButton";
-            this.trippleRowRadioButton.Size = new System.Drawing.Size(82, 17);
-            this.trippleRowRadioButton.TabIndex = 21;
-            this.trippleRowRadioButton.Text = "Tripple Row";
-            this.trippleRowRadioButton.UseVisualStyleBackColor = true;
+            this.tripleRowRadioButton.AutoSize = true;
+            this.tripleRowRadioButton.Location = new System.Drawing.Point(147, 258);
+            this.tripleRowRadioButton.Name = "tripleRowRadioButton";
+            this.tripleRowRadioButton.Size = new System.Drawing.Size(76, 17);
+            this.tripleRowRadioButton.TabIndex = 21;
+            this.tripleRowRadioButton.Text = "Triple Row";
+            this.tripleRowRadioButton.UseVisualStyleBackColor = true;
+            this.tripleRowRadioButton.CheckedChanged += new System.EventHandler(this.tripleRowRadioButton_CheckedChanged);
+            // 
+            // colRightLabel
+            // 
+            this.colRightLabel.AutoSize = true;
+            this.colRightLabel.Location = new System.Drawing.Point(329, 307);
+            this.colRightLabel.Name = "colRightLabel";
+            this.colRightLabel.Size = new System.Drawing.Size(32, 13);
+            this.colRightLabel.TabIndex = 24;
+            this.colRightLabel.Text = "Right";
+            // 
+            // colCenterLabel
+            // 
+            this.colCenterLabel.AutoSize = true;
+            this.colCenterLabel.Location = new System.Drawing.Point(232, 307);
+            this.colCenterLabel.Name = "colCenterLabel";
+            this.colCenterLabel.Size = new System.Drawing.Size(38, 13);
+            this.colCenterLabel.TabIndex = 23;
+            this.colCenterLabel.Text = "Center";
+            // 
+            // colLeftLabel
+            // 
+            this.colLeftLabel.AutoSize = true;
+            this.colLeftLabel.Location = new System.Drawing.Point(139, 307);
+            this.colLeftLabel.Name = "colLeftLabel";
+            this.colLeftLabel.Size = new System.Drawing.Size(25, 13);
+            this.colLeftLabel.TabIndex = 22;
+            this.colLeftLabel.Text = "Left";
+            // 
+            // clearAllButton
+            // 
+            this.clearAllButton.Location = new System.Drawing.Point(807, 643);
+            this.clearAllButton.Name = "clearAllButton";
+            this.clearAllButton.Size = new System.Drawing.Size(75, 23);
+            this.clearAllButton.TabIndex = 25;
+            this.clearAllButton.Text = "Clear All";
+            this.clearAllButton.UseVisualStyleBackColor = true;
+            this.clearAllButton.Click += new System.EventHandler(this.clearAllButton_Click);
+            // 
+            // commentGroupBox
+            // 
+            this.commentGroupBox.Controls.Add(this.dartRadioButton);
+            this.commentGroupBox.Controls.Add(this.datumRadioButton);
+            this.commentGroupBox.Controls.Add(this.beamRadioButton);
+            this.commentGroupBox.Location = new System.Drawing.Point(332, 238);
+            this.commentGroupBox.Name = "commentGroupBox";
+            this.commentGroupBox.Size = new System.Drawing.Size(199, 51);
+            this.commentGroupBox.TabIndex = 26;
+            this.commentGroupBox.TabStop = false;
+            this.commentGroupBox.Text = "     Transpose Comments";
+            // 
+            // transposeCheckBox
+            // 
+            this.transposeCheckBox.AutoSize = true;
+            this.transposeCheckBox.Location = new System.Drawing.Point(338, 239);
+            this.transposeCheckBox.Name = "transposeCheckBox";
+            this.transposeCheckBox.Size = new System.Drawing.Size(15, 14);
+            this.transposeCheckBox.TabIndex = 0;
+            this.transposeCheckBox.UseVisualStyleBackColor = true;
+            this.transposeCheckBox.CheckedChanged += new System.EventHandler(this.transposeCheckBox_CheckedChanged);
+            // 
+            // beamRadioButton
+            // 
+            this.beamRadioButton.AutoSize = true;
+            this.beamRadioButton.Location = new System.Drawing.Point(6, 20);
+            this.beamRadioButton.Name = "beamRadioButton";
+            this.beamRadioButton.Size = new System.Drawing.Size(55, 17);
+            this.beamRadioButton.TabIndex = 1;
+            this.beamRadioButton.TabStop = true;
+            this.beamRadioButton.Text = "BEAM";
+            this.beamRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // datumRadioButton
+            // 
+            this.datumRadioButton.AutoSize = true;
+            this.datumRadioButton.Location = new System.Drawing.Point(67, 20);
+            this.datumRadioButton.Name = "datumRadioButton";
+            this.datumRadioButton.Size = new System.Drawing.Size(64, 17);
+            this.datumRadioButton.TabIndex = 2;
+            this.datumRadioButton.TabStop = true;
+            this.datumRadioButton.Text = "DATUM";
+            this.datumRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // dartRadioButton
+            // 
+            this.dartRadioButton.AutoSize = true;
+            this.dartRadioButton.Location = new System.Drawing.Point(137, 20);
+            this.dartRadioButton.Name = "dartRadioButton";
+            this.dartRadioButton.Size = new System.Drawing.Size(55, 17);
+            this.dartRadioButton.TabIndex = 3;
+            this.dartRadioButton.TabStop = true;
+            this.dartRadioButton.Text = "DART";
+            this.dartRadioButton.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(894, 505);
-            this.Controls.Add(this.trippleRowRadioButton);
+            this.ClientSize = new System.Drawing.Size(894, 678);
+            this.Controls.Add(this.transposeCheckBox);
+            this.Controls.Add(this.commentGroupBox);
+            this.Controls.Add(this.clearAllButton);
+            this.Controls.Add(this.colRightLabel);
+            this.Controls.Add(this.colCenterLabel);
+            this.Controls.Add(this.colLeftLabel);
+            this.Controls.Add(this.tripleRowRadioButton);
             this.Controls.Add(this.singleRowRadioButton);
             this.Controls.Add(this.sublimeCheckBox);
             this.Controls.Add(this.label10);
-            this.Controls.Add(this.label9);
-            this.Controls.Add(this.label8);
-            this.Controls.Add(this.label7);
+            this.Controls.Add(this.rowRightLabel);
+            this.Controls.Add(this.rowCenterLabel);
+            this.Controls.Add(this.rowLeftLabel);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
@@ -282,7 +392,10 @@
             this.Controls.Add(this.dataGridView1);
             this.Name = "MainForm";
             this.Text = "Form1";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            this.commentGroupBox.ResumeLayout(false);
+            this.commentGroupBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -305,13 +418,22 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label rowLeftLabel;
+        private System.Windows.Forms.Label rowCenterLabel;
+        private System.Windows.Forms.Label rowRightLabel;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.CheckBox sublimeCheckBox;
         private System.Windows.Forms.RadioButton singleRowRadioButton;
-        private System.Windows.Forms.RadioButton trippleRowRadioButton;
+        private System.Windows.Forms.RadioButton tripleRowRadioButton;
+        private System.Windows.Forms.Label colRightLabel;
+        private System.Windows.Forms.Label colCenterLabel;
+        private System.Windows.Forms.Label colLeftLabel;
+        private System.Windows.Forms.Button clearAllButton;
+        private System.Windows.Forms.GroupBox commentGroupBox;
+        private System.Windows.Forms.CheckBox transposeCheckBox;
+        private System.Windows.Forms.RadioButton dartRadioButton;
+        private System.Windows.Forms.RadioButton datumRadioButton;
+        private System.Windows.Forms.RadioButton beamRadioButton;
     }
 }
 

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.Windows.Forms;
 
 namespace TDSPaster
 {
@@ -18,6 +19,45 @@ namespace TDSPaster
                 Verb = "OPEN"
             };
             Process.Start(pi);
+        }
+
+        //clears all controls on the sending form
+        public static void ClearControls(Control control)
+        {
+            foreach (Control c in control.Controls)
+            {
+                if (c is TextBox)
+                {
+                    ((TextBox) c).Clear();
+                }
+
+                if (c.HasChildren)
+                {
+                    ClearControls(c);
+                }
+
+                if (c is CheckBox)
+                {
+                    ((CheckBox) c).Checked = false;
+                }
+
+                if (c is RadioButton)
+                {
+                    ((RadioButton) c).Checked = false;
+                }
+
+                if (c is ListBox)
+                {
+                    ((ListBox) c).Items.Clear();
+                }
+
+                if (c is DataGridView)
+                {
+                    ((DataGridView) c).DataSource = null;
+                    ((DataGridView) c).Rows.Clear();
+                    ((DataGridView) c).Columns.Clear();
+                }
+            }
         }
     }
 }
