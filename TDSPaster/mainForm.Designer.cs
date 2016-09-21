@@ -48,6 +48,8 @@
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.sublimeCheckBox = new System.Windows.Forms.CheckBox();
+            this.singleRowRadioButton = new System.Windows.Forms.RadioButton();
+            this.trippleRowRadioButton = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -65,9 +67,9 @@
             // PasteDataButton
             // 
             this.PasteDataButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 48F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.PasteDataButton.Location = new System.Drawing.Point(286, 46);
+            this.PasteDataButton.Location = new System.Drawing.Point(286, 26);
             this.PasteDataButton.Name = "PasteDataButton";
-            this.PasteDataButton.Size = new System.Drawing.Size(214, 163);
+            this.PasteDataButton.Size = new System.Drawing.Size(214, 156);
             this.PasteDataButton.TabIndex = 1;
             this.PasteDataButton.Text = "Paste Data";
             this.PasteDataButton.UseVisualStyleBackColor = true;
@@ -98,7 +100,7 @@
             this.previewListBox.FormattingEnabled = true;
             this.previewListBox.Location = new System.Drawing.Point(13, 26);
             this.previewListBox.Name = "previewListBox";
-            this.previewListBox.Size = new System.Drawing.Size(267, 186);
+            this.previewListBox.Size = new System.Drawing.Size(267, 173);
             this.previewListBox.TabIndex = 4;
             // 
             // elevationTextBox
@@ -215,9 +217,9 @@
             this.label10.AutoSize = true;
             this.label10.Location = new System.Drawing.Point(12, 215);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(165, 13);
+            this.label10.Size = new System.Drawing.Size(184, 13);
             this.label10.TabIndex = 18;
-            this.label10.Text = "Data must be in the format below.";
+            this.label10.Text = "Select the format of your pasted data.";
             // 
             // sublimeCheckBox
             // 
@@ -229,11 +231,35 @@
             this.sublimeCheckBox.Text = "Open file in sublime after save?";
             this.sublimeCheckBox.UseVisualStyleBackColor = true;
             // 
-            // Form1
+            // singleRowRadioButton
+            // 
+            this.singleRowRadioButton.AutoSize = true;
+            this.singleRowRadioButton.Checked = true;
+            this.singleRowRadioButton.Location = new System.Drawing.Point(203, 210);
+            this.singleRowRadioButton.Name = "singleRowRadioButton";
+            this.singleRowRadioButton.Size = new System.Drawing.Size(79, 17);
+            this.singleRowRadioButton.TabIndex = 20;
+            this.singleRowRadioButton.TabStop = true;
+            this.singleRowRadioButton.Text = "Single Row";
+            this.singleRowRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // trippleRowRadioButton
+            // 
+            this.trippleRowRadioButton.AutoSize = true;
+            this.trippleRowRadioButton.Location = new System.Drawing.Point(286, 210);
+            this.trippleRowRadioButton.Name = "trippleRowRadioButton";
+            this.trippleRowRadioButton.Size = new System.Drawing.Size(82, 17);
+            this.trippleRowRadioButton.TabIndex = 21;
+            this.trippleRowRadioButton.Text = "Tripple Row";
+            this.trippleRowRadioButton.UseVisualStyleBackColor = true;
+            // 
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(894, 505);
+            this.Controls.Add(this.trippleRowRadioButton);
+            this.Controls.Add(this.singleRowRadioButton);
             this.Controls.Add(this.sublimeCheckBox);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.label9);
@@ -254,7 +280,7 @@
             this.Controls.Add(this.SaveFileButton);
             this.Controls.Add(this.PasteDataButton);
             this.Controls.Add(this.dataGridView1);
-            this.Name = "Form1";
+            this.Name = "MainForm";
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
@@ -284,6 +310,8 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.CheckBox sublimeCheckBox;
+        private System.Windows.Forms.RadioButton singleRowRadioButton;
+        private System.Windows.Forms.RadioButton trippleRowRadioButton;
     }
 }
 

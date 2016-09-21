@@ -28,8 +28,27 @@ namespace TDSPaster
 
         //cleaning up the many types of comments that are not TDS compatable
         public string DataValidator(string readingValue)
-        {   
-            char[] charsToTrim = { '.' };//Place any characters that should not go into the TDS file here
+        {   //This code checks to see if the reading has been truncated and repairs if it has
+            int count = 0;
+            decimal floatHolder;            
+            count = readingValue.Length;
+            //executes if the reading has had just one zero truncated
+            if (count == 4)
+            {
+                //adds a zero to the end of the reading by multiplying by the decimal
+                floatHolder = decimal.Parse(readingValue);
+                floatHolder = floatHolder * 1.0m;
+                readingValue = floatHolder.ToString();
+            }
+            //ececutes if the reading has had two zeros truncated
+            if (count == 3)
+            {
+                floatHolder = decimal.Parse(readingValue);
+                floatHolder = floatHolder * 1.00m;
+                readingValue = floatHolder.ToString();               
+            }
+            
+            char[] charsToTrim = {'.'};//Place any characters that should not go into the TDS file here
             string goodData;
             //the following two strings encase the numeric value
             string quote = "\"";
@@ -37,13 +56,17 @@ namespace TDSPaster
             //if the data is numbers with a single character the if statement will execute.           
             if (Regex.IsMatch(readingValue, @"\d"))
             {
+                readingValue = readingValue.TrimStart('0'); //getting rid of any leading zeros
                 readingValue = readingValue.Trim(charsToTrim);
                 readingValue = quote + readingValue + spaceQuote;
                 return readingValue;  
             }
             //if there is only text or more than 1 non integer character the else statement will execute and return 4 spaces to be written to the TDS file
+            else
+            { 
             goodData = @"""    """;
             return goodData;
+            }
         }
 
         private static string RemoveNonAlpha(string line)
@@ -109,12 +132,23 @@ namespace TDSPaster
             {
                 string[] pastedRows = Regex.Split(o.GetData(DataFormats.Text).ToString().TrimEnd("\r\n".ToCharArray()), "\r\n");
                 int j = 0;
-                
+
                 //Manually adding the tube columns to the datagrid view (this is required before data can be added
-                for (int b = 1; b <= tubeCount; b++)
+                if (singleRowRadioButton.Checked)
                 {
-                    string tubeColumn = "Tube";
-                    dataGridView1.Columns.Add(tubeColumn + b, b.ToString());
+                    for (int b = 1; b <= tubeCount * 3; b++)
+                    {
+                        string tubeColumn = "Tube";
+                        dataGridView1.Columns.Add(tubeColumn + b, b.ToString());
+                    }
+                }
+                if (trippleRowRadioButton.Checked)
+                {
+                    for (int b = 1; b <= tubeCount; b++)
+                    {
+                        string tubeColumn = "Tube";
+                        dataGridView1.Columns.Add(tubeColumn + b, b.ToString());
+                    }
                 }
                 //This is the code that adds the copied data to the datagrid view, not 100% on how it works.
                 foreach (string pastedRow in pastedRows)
@@ -134,7 +168,7 @@ namespace TDSPaster
             }   
             //Simple data validation. If the amount of tubes pasted does not equal the amount of tubes for the actual section
             // the user is given an alert. Lots of room for improvement here.         
-            if (tubeCount != dataGridView1.ColumnCount)
+            if (tubeCount*3 != dataGridView1.ColumnCount)
             {
                 MessageBox.Show("Oh no! It seems that you have pasted an amount of tubes that does not match the tube count for the section! If you continue the program will crash!");
             }
@@ -203,75 +237,169 @@ namespace TDSPaster
                 reader2.Close();
             }
         }
-        
+
         //data from the datagridview is stored in an array and written to the TDS file the user has selected.
         private void SaveFileButton_Click(object sender, EventArgs e)
         {
-            //creating the array, this is dynamic, the array will match the number of columns and rows
-            string[,] readingValueArray = new string[dataGridView1.Rows.Count, dataGridView1.Columns.Count];
-            //populating the array
-            foreach (DataGridViewRow row in dataGridView1.Rows)
-            {                
-                foreach (DataGridViewColumn col in dataGridView1.Columns)
-                {//crawling the datagridview and storing values in the array
-                    readingValueArray[row.Index, col.Index] = dataGridView1.Rows[row.Index].Cells[col.Index].Value.ToString();
-                }
-            }
-            //this is going to fetch the amount of lines in the document we are writing to
-            string[] lines = File.ReadAllLines(fileLocation);
-            //simple counters for each location on the tube
-            int leftCounter = 0;
-            int centerCounter = 0;
-            int rightCounter = 0;
- 
-            //outputting the array values to the TDS file
-            using (StreamWriter writer = new StreamWriter(fileLocation))
+            //This large block of code executes if the user selects the tripple row radio button
+            if (trippleRowRadioButton.Checked)
             {
-                for (int currentLine = 1; currentLine <= lines.Length; ++currentLine)
-                {    //printing left readings to file first             
-                     if (currentLine >= 6 && currentLine <= (tubeCount +5))
-                     {
-                        string value = readingValueArray[0, leftCounter];
-                        //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
-                        string returnedValue = DataValidator(value);
-                        
-                        writer.WriteLine(returnedValue);
-                        leftCounter++;
-                     }//printing center readings
-                    else if (currentLine > (tubeCount + 11) && currentLine <= ((tubeCount * 2) + 11))
-                    {
-                        string value = readingValueArray[1, centerCounter];
-                        //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
-                        string returnedValue = DataValidator(value);
+                //creating the array, this is dynamic, the array will match the number of columns and rows
+                string[,] readingValueArray = new string[dataGridView1.Rows.Count, dataGridView1.Columns.Count];
+                //populating the array
+                foreach (DataGridViewRow row in dataGridView1.Rows)
+                {
+                    foreach (DataGridViewColumn col in dataGridView1.Columns)
+                    {//crawling the datagridview and storing values in the array
+                        readingValueArray[row.Index, col.Index] = dataGridView1.Rows[row.Index].Cells[col.Index].Value.ToString();
+                    }
+                }
+                //this is going to fetch the amount of lines in the document we are writing to
+                string[] lines = File.ReadAllLines(fileLocation);
+                //simple counters for each location on the tube
+                int leftCounter = 0;
+                int centerCounter = 0;
+                int rightCounter = 0;
 
-                        writer.WriteLine(returnedValue);
-                        centerCounter++;
-                    }//printing right readings
-                    else if (currentLine > tubeCount * 2 + 17 && currentLine <= ((tubeCount * 3) + 17))
-                     {
-                        string value = readingValueArray[2, rightCounter];
-                        //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
-                        string returnedValue = DataValidator(value);
+                //outputting the array values to the TDS file
+                using (StreamWriter writer = new StreamWriter(fileLocation))
+                {
+                    for (int currentLine = 1; currentLine <= lines.Length; ++currentLine)
+                    {    //printing left readings to file first             
+                        if (currentLine >= 6 && currentLine <= (tubeCount + 5))
+                        {
+                            string value = readingValueArray[0, leftCounter];
+                            //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
+                            string returnedValue = DataValidator(value);
 
-                        writer.WriteLine(returnedValue);
+                            writer.WriteLine(returnedValue);
+                            leftCounter++;
+                        }//printing center readings
+                        else if (currentLine > (tubeCount + 11) && currentLine <= ((tubeCount * 2) + 11))
+                        {
+                            string value = readingValueArray[1, centerCounter];
+                            //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
+                            string returnedValue = DataValidator(value);
+
+                            writer.WriteLine(returnedValue);
+                            centerCounter++;
+                        }//printing right readings
+                        else if (currentLine > tubeCount * 2 + 17 && currentLine <= ((tubeCount * 3) + 17))
+                        {
+                            string value = readingValueArray[2, rightCounter];
+                            //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
+                            string returnedValue = DataValidator(value);
+
+                            writer.WriteLine(returnedValue);
                             rightCounter++;
-                     }    
-                    else 
-                    {//not 100% sure I think this closes the stream once end of file is reached and saves it also
-                        writer.WriteLine(lines[currentLine - 1]);
-                    }                    
+                        }
+                        else
+                        {//not 100% sure I think this closes the stream once end of file is reached and saves it also
+                            writer.WriteLine(lines[currentLine - 1]);
+                        }
+                    }
+                }
+                MessageBox.Show("If nothing caught fire the file was transfered!");
+
+                //Reset the tube count
+                tubeCount = 0;
+
+                //The following lines are for debugging only. 
+                if (sublimeCheckBox.Checked)
+                {
+                    Util.OpenInSublime(fileLocation);
                 }
             }
-            MessageBox.Show("If nothing caught fire the file was transfered!");
-            
-            //Reset the tube count
-            tubeCount = 0;
-
-            //The following lines are for debugging only. 
-            if (sublimeCheckBox.Checked)
+            //this code executes when the single row radio button has been selected.
+            else if (singleRowRadioButton.Checked)
             {
-                Util.OpenInSublime(fileLocation);
+                int leftCounter1 = 0;
+                int centerCounter1 = 0;
+                int rightCounter1 = 0;
+                //creating the array, this is dynamic, the array will match the number of columns and rows
+                string[,] readingValueArray = new string[3, tubeCount];
+                //loops through the pasted data selecting and saving every 3rd reading to the first row of the array
+                for (int left = 0; left < tubeCount*3; left = left +3)
+                {
+                    readingValueArray[0, leftCounter1] = dataGridView1.Rows[0].Cells[left].Value.ToString();
+                    leftCounter1++;
+                }
+                //loops through the pasted data selecting and saving every 3rd reading to the second row of the array
+                for (int center = 1; center < tubeCount*3; center = center +3)
+                {
+                    readingValueArray[1, centerCounter1] = dataGridView1.Rows[0].Cells[center].Value.ToString();
+                    centerCounter1++;
+                }
+                //loops through the pasted data selecting and saving every 3rd reading to the third row of the array
+                for (int right = 2; right < tubeCount*3; right = right + 3)
+                {
+                    readingValueArray[2, rightCounter1] = dataGridView1.Rows[0].Cells[right].Value.ToString();
+                    rightCounter1++;
+                }
+                //this is going to fetch the amount of lines in the document we are writing to
+                string[] lines = File.ReadAllLines(fileLocation);
+                //simple counters for each location on the tube
+                int leftCounter = 0;
+                int centerCounter = 0;
+                int rightCounter = 0;
+
+                //outputting the array values to the TDS file
+                using (StreamWriter writer = new StreamWriter(fileLocation))
+                {
+                    for (int currentLine = 1; currentLine <= lines.Length; ++currentLine)
+                    {    //printing left readings to file first             
+                        if (currentLine >= 6 && currentLine <= (tubeCount + 5))
+                        {
+                            string value = readingValueArray[0, leftCounter];
+                            //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
+                            string returnedValue = DataValidator(value);
+
+                            writer.WriteLine(returnedValue);
+                            leftCounter++;
+                        }//printing center readings
+                        else if (currentLine > (tubeCount + 11) && currentLine <= ((tubeCount * 2) + 11))
+                        {
+                            string value = readingValueArray[1, centerCounter];
+                            //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
+                            string returnedValue = DataValidator(value);
+
+                            writer.WriteLine(returnedValue);
+                            centerCounter++;
+                        }//printing right readings
+                        else if (currentLine > tubeCount * 2 + 17 && currentLine <= ((tubeCount * 3) + 17))
+                        {
+                            string value = readingValueArray[2, rightCounter];
+                            //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
+                            string returnedValue = DataValidator(value);
+
+                            writer.WriteLine(returnedValue);
+                            rightCounter++;
+                        }
+                        else
+                        {//not 100% sure I think this closes the stream once end of file is reached and saves it also
+                            writer.WriteLine(lines[currentLine - 1]);
+                        }
+                    }
+                }
+                MessageBox.Show("If nothing caught fire the file was transfered!");
+
+                //Reset the tube count
+                tubeCount = 0;
+
+                //The following lines are for debugging only. 
+                if (sublimeCheckBox.Checked)
+                {
+                    Util.OpenInSublime(fileLocation);
+                }
+            
+
+        }
+
+            else
+            {
+                MessageBox.Show("Please select which format the data you pasted is in.");
             }
+
         }
     }
 }
