@@ -59,5 +59,13 @@ namespace TDSPaster
                 }
             }
         }
+
+        public static void CloseConfirmation(object sender, FormClosingEventArgs e)
+        {
+            if (MessageBox.Show("Are you sure you want to exit?", "Exit Application", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                e.Cancel = true;
+            }
+        }
     }
 }
