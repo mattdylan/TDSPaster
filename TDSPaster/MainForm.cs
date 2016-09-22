@@ -19,6 +19,7 @@ namespace TDSPaster
         string boilerName;
         string inspectionYear;
         int tubeCount;
+        int pastedRowLength;
 
         public MainForm()
         {
@@ -44,16 +45,16 @@ namespace TDSPaster
                 //This code checks to see if the reading has been truncated and repairs if it has
                 int count = readingValue.Length;
                 decimal floatHolder;
-                //executes if the reading has had just one zero truncated
-                if (count == 4)
+                //executes if the reading has had just one zero truncated and checks for leading zero beam exports
+                if (readingValue.StartsWith("0") && count == 4)
                 {
                     //adds a zero to the end of the reading by multiplying by the decimal
                     floatHolder = decimal.Parse(readingValue);
                     floatHolder = floatHolder * 1.0m;
                     readingValue = floatHolder.ToString();
                 }
-                //executes if the reading has had two zeroes truncated
-                if (count == 3)
+                //executes if the reading has had two zeroes truncated and checks for leading zero beam exports
+                if (readingValue.StartsWith("0") && count == 3)
                 {
                     floatHolder = decimal.Parse(readingValue);
                     floatHolder = floatHolder * 1.00m;
@@ -137,6 +138,49 @@ namespace TDSPaster
             }
             return readingValue;
         }*/
+
+        //error message method for tube count error
+        private string errMSGTubeCount(int tubeCompare)
+        {
+            float pastedTubeCount = (float)pastedRowLength;
+            string invalidTubeCountSingleRowMSG = ("The pasted data tube count does not match the selected file tube count." +
+                            "\n" + "Execution will not continue." +
+                            "\n" + "Selected File Tube Count:" + tubeCount +
+                            "\n" + "Pasted Data Tube Count:" + pastedTubeCount / 3f);
+            string invalidTubeCountTrippleRowMSG = ("The pasted data tube count does not match the selected file tube count." +
+                            "\n" + "Execution will not continue." +
+                            "\n" + "Selected File Tube Count:" + tubeCount +
+                            "\n" + "Pasted Data Tube Count:" + pastedTubeCount);
+            if (tubeCompare == 1)
+            {
+                return invalidTubeCountSingleRowMSG;
+            }
+                
+                return invalidTubeCountTrippleRowMSG;           
+        }
+
+        //checking to see if the pasted tube count matches selected file tubecount
+        private int tubeCountComparison()
+        {    
+            //casting variables so division works properly        
+            float tubeCountFloat = (float)tubeCount;
+            float pastedTubeCount = (float)pastedRowLength;
+            pastedTubeCount = pastedTubeCount / 3.00f;
+            //executes if single row pasted data does not match selected file
+            if (singleRowRadioButton.Checked && (pastedTubeCount != tubeCountFloat))
+            {
+                int failSingleRow = 1;
+                return failSingleRow;
+            }
+            //executes if tripple row pasted data does not match selected file
+            else if (tripleRowRadioButton.Checked && (tubeCount != pastedRowLength))
+            {
+                int failTrippleRow = 2;
+                return failTrippleRow;
+            }
+            int passedTest = 3;
+            return passedTest;
+        }
 
         private void SetInspectionInfo(string line, int counter)
         {
@@ -341,7 +385,7 @@ namespace TDSPaster
                 {
                     string[] pastedRows = Regex.Split(o.GetData(DataFormats.Text).ToString().TrimEnd("\r\n".ToCharArray()), "\r\n");
                     int j = 0;
-
+                    
                     //Manually adding the tube columns to the datagrid view (this is required before data can be added
                     if (singleRowRadioButton.Checked)
                     {
@@ -363,7 +407,7 @@ namespace TDSPaster
                     foreach (string pastedRow in pastedRows)
                     {
                         string[] pastedRowCells = pastedRow.Split(new char[] { '\t' });
-
+                        pastedRowLength = pastedRowCells.Length;//this is needed to verify that the data pasted matches the selected file
                         dataGridView1.Rows.Add();
 
                         using (DataGridViewRow dataGridView1Row = dataGridView1.Rows[j])
@@ -373,15 +417,11 @@ namespace TDSPaster
                         }
                         j++;
                     }
+                    
                     //enable the save button once data has been pasted
                     SaveFileButton.Enabled = true;
                 }
-                //Simple data validation. If the amount of tubes pasted does not equal the amount of tubes for the actual section
-                // the user is given an alert. Lots of room for improvement here.         
-                if (tubeCount * 3 != dataGridView1.ColumnCount)
-                {
-                    MessageBox.Show("Oh no! It seems that you have pasted an amount of tubes that does not match the tube count for the section! If you continue the program will crash!");
-                }
+                                         
             }
             catch (Exception ex)
             {
@@ -392,14 +432,19 @@ namespace TDSPaster
 
         //data from the datagridview is stored in an array and written to the TDS file the user has selected.
         private void SaveFileButton_Click(object sender, EventArgs e)
-        {
+        {           
             try
             {
                 //This large block of code executes if the user selects the triple row radio button
                 if (tripleRowRadioButton.Checked)
                 {
+                    //validating that the selected file tube count matches the pasted data, for more info check methods above
+                    int tubeCompare = tubeCountComparison();
+                    if (tubeCompare == 2) { string errMSG = errMSGTubeCount(tubeCompare); MessageBox.Show(errMSG); return; }
+                    
                     //creating the array, this is dynamic, the array will match the number of columns and rows
                     string[,] readingValueArray = new string[dataGridView1.Rows.Count, dataGridView1.Columns.Count];
+                    
                     //populating the array
                     foreach (DataGridViewRow row in dataGridView1.Rows)
                     {
@@ -425,6 +470,10 @@ namespace TDSPaster
                 //this code executes when the single row radio button has been selected.
                 else if (singleRowRadioButton.Checked)
                 {
+                    //validating that the selected file tube count matches the pasted data, for more info check methods above
+                    int tubeCompare = tubeCountComparison();
+                    if (tubeCompare == 1) { string errMSG = errMSGTubeCount(tubeCompare); MessageBox.Show(errMSG); return; }
+
                     int leftCounter = 0;
                     int centerCounter = 0;
                     int rightCounter = 0;
