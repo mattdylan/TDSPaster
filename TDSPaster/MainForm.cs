@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Media;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -28,9 +29,6 @@ namespace TDSPaster
             InitializeComponent();
             //open the form on center screen
             CenterToScreen();
-
-            //todo I'm not sure that the comment below belongs here lol
-            //In order to do some basic validation I require the user to select a file before the paste button is enabled
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -38,88 +36,7 @@ namespace TDSPaster
             InitControls();
             elevationOverwriteLabel.ForeColor = Color.Red;
         }
-
-        //cleaning up the many types of comments that are not TDS compatable
-        public string DataValidator(string readingValue)
-        {   
-            //check to make sure data already contains decimals. If not, continue on with validation. If so, checks and fixes decimal placement (ie data truncated from BEAM).
-            if (readingValue.Contains("."))
-            {
-                //This code checks to see if the reading has been truncated and repairs if it has
-                int count = readingValue.Length;
-                decimal floatHolder;
-                //executes if the reading has had just one zero truncated and checks for leading zero beam exports
-                if (readingValue.StartsWith("0") && count == 4)
-                {
-                    //adds a zero to the end of the reading by multiplying by the decimal
-                    floatHolder = decimal.Parse(readingValue);
-                    floatHolder = floatHolder * 1.0m;
-                    readingValue = floatHolder.ToString();
-                }
-                //executes if the reading has had two zeroes truncated and checks for leading zero beam exports
-                if (readingValue.StartsWith("0") && count == 3)
-                {
-                    floatHolder = decimal.Parse(readingValue);
-                    floatHolder = floatHolder * 1.00m;
-                    readingValue = floatHolder.ToString();
-                }
-            }
-
-            char[] charsToTrim = {'.'};//Place any characters that should not go into the TDS file here
-
-            //create an array of TDS comments
-            var hasTdsComments = readingValue.IndexOfAny("+()/=<>;$[#*@?".ToCharArray()) != -1;
-
-            //the following two strings encase the numeric value
-            string quote = "\"";
-            string spaceQuote = " \"";
-            string commentQuote = "\"   ";
-            string singleZero = "0";
-            string doubleZero = "00";
-            //if the data is numbers with a single character the if statement will execute.           
-            if (Regex.IsMatch(readingValue, @"\d"))
-            {
-                //todo put the trimming functions in their own method
-                readingValue = readingValue.TrimStart('0'); //getting rid of any leading zeros
-                readingValue = readingValue.Trim(charsToTrim);
-                int count = readingValue.Length;
-                if (count == 3)
-                {
-                    readingValue = quote + readingValue + spaceQuote;
-                }
-                if (count == 2)
-                {
-                    readingValue = quote + singleZero + readingValue + spaceQuote;
-                }
-                if (count == 1)
-                {
-                    readingValue = quote + doubleZero + readingValue + spaceQuote;
-                }
-                }
-            //check if the reading contains TDS comments.
-            else if (hasTdsComments)
-            {
-                //remove all whitespace and format the comment for the TDS
-                readingValue = readingValue.Replace(" ", string.Empty);
-                readingValue = commentQuote + readingValue + quote;
-            }
-
-            //if the reading is not a valid reading or TDS comment replace reading with a blank reading
-            else
-            { 
-                readingValue = @"""    """;
-            }
-            return readingValue;
-        }
-
-        private static string RemoveNonAlpha(string line)
-        {
-            //Replace all multiple spaces with just one space, then remove the quotes.
-            var newLine = Regex.Replace(line, @"\s+", " ");
-            newLine = newLine.Replace("\"", string.Empty);
-            return newLine;
-        }
-
+        
         //error message method for tube count error
         private string ErrMsgTubeCount(int tubeCompare)
         {
@@ -136,8 +53,7 @@ namespace TDSPaster
             {
                 return invalidTubeCountSingleRowMsg;
             }
-                
-                return invalidTubeCountTripleRowMsg;
+            return invalidTubeCountTripleRowMsg;
         }
 
         //checking to see if the pasted tube count matches selected file tubecount
@@ -170,42 +86,42 @@ namespace TDSPaster
 
             if (counter == 0)
             {
-                newLine = RemoveNonAlpha(line);
+                newLine = DataValidation.RemoveNonAlpha(line);
                 _millName = newLine;
             }
             if (counter == 1)
             {
-                newLine = RemoveNonAlpha(line);
+                newLine = DataValidation.RemoveNonAlpha(line);
                 _boilerName = newLine;
             }
             if (counter == 2)
             {
-                newLine = RemoveNonAlpha(line);
+                newLine = DataValidation.RemoveNonAlpha(line);
                 _sectionName = newLine;
             }
             if (counter == 3)
             {
-                newLine = RemoveNonAlpha(line);
+                newLine = DataValidation.RemoveNonAlpha(line);
                 _elevationName2 = newLine;
             }
             if (counter == 4)
             {
-                newLine = RemoveNonAlpha(line);
+                newLine = DataValidation.RemoveNonAlpha(line);
                 _elevationName1 = newLine;
             }
             if (counter == _tubeCount +6)
             {
-                newLine = RemoveNonAlpha(line);
+                newLine = DataValidation.RemoveNonAlpha(line);
                 _location = newLine;
             }
             if (counter == _tubeCount +7)
             {
-                newLine = RemoveNonAlpha(line);
+                newLine = DataValidation.RemoveNonAlpha(line);
                 _inspectionYear = newLine;
             } 
             if (counter == _tubeCount +10)
             {
-                newLine = RemoveNonAlpha(line);
+                newLine = DataValidation.RemoveNonAlpha(line);
                 _elevationName3 = newLine;
             }
         }
@@ -213,51 +129,51 @@ namespace TDSPaster
         private void WriteTdsFile(string fileLocation, string [,] readingValueArray)
         {
             //this is going to fetch the amount of lines in the document we are writing to
-                string[] lines = File.ReadAllLines(fileLocation);
-                //simple counters for each location on the tube
-                int leftCounter = 0;
-                int centerCounter = 0;
-                int rightCounter = 0;
+            string[] lines = File.ReadAllLines(fileLocation);
+            //simple counters for each location on the tube
+            int leftCounter = 0;
+            int centerCounter = 0;
+            int rightCounter = 0;
 
-                //outputting the array values to the TDS file
-                using (StreamWriter writer = new StreamWriter(fileLocation))
-                {
-                    for (int currentLine = 1; currentLine <= lines.Length; ++currentLine) 
-                    {    //printing left readings to file first             
-                        if (currentLine >= 6 && currentLine <= (_tubeCount + 5))
-                        {
-                            string readingValue = readingValueArray[0, leftCounter];
-                            //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
-                            string returnedValue = DataValidator(readingValue);
-                            writer.WriteLine(returnedValue);
-                            leftCounter++;
-                        }
-                        //printing center readings
-                        else if (currentLine > (_tubeCount + 11) && currentLine <= ((_tubeCount * 2) + 11))
-                        {
-                            string readingValue = readingValueArray[1, centerCounter];
-                            //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
-                            string returnedValue = DataValidator(readingValue);
+            //outputting the array values to the TDS file
+            using (StreamWriter writer = new StreamWriter(fileLocation))
+            {
+                for (int currentLine = 1; currentLine <= lines.Length; ++currentLine) 
+                {    //printing left readings to file first             
+                    if (currentLine >= 6 && currentLine <= (_tubeCount + 5))
+                    {
+                        string readingValue = readingValueArray[0, leftCounter];
+                        //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
+                        string returnedValue = DataValidation.DataValidator(readingValue);
+                        writer.WriteLine(returnedValue);
+                        leftCounter++;
+                    }
+                    //printing center readings
+                    else if (currentLine > (_tubeCount + 11) && currentLine <= ((_tubeCount * 2) + 11))
+                    {
+                        string readingValue = readingValueArray[1, centerCounter];
+                        //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
+                        string returnedValue = DataValidation.DataValidator(readingValue);
 
-                            writer.WriteLine(returnedValue);
-                            centerCounter++;
-                        }
-                        //printing right readings
-                        else if (currentLine > _tubeCount * 2 + 17 && currentLine <= ((_tubeCount * 3) + 17))
-                        {
-                            string readingValue = readingValueArray[2, rightCounter];
-                            //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
-                            string returnedValue = DataValidator(readingValue);
+                        writer.WriteLine(returnedValue);
+                        centerCounter++;
+                    }
+                    //printing right readings
+                    else if (currentLine > _tubeCount * 2 + 17 && currentLine <= ((_tubeCount * 3) + 17))
+                    {
+                        string readingValue = readingValueArray[2, rightCounter];
+                        //passing the cleanup method the value of the cell in the array, it will return the TDS acceptable value
+                        string returnedValue = DataValidation.DataValidator(readingValue);
 
-                            writer.WriteLine(returnedValue);
-                            rightCounter++;
-                        }
-                        else
-                        {//not 100% sure I think this closes the stream once end of file is reached and saves it also
-                            writer.WriteLine(lines[currentLine - 1]);
-                        }
+                        writer.WriteLine(returnedValue);
+                        rightCounter++;
+                    }
+                    else
+                    {//not 100% sure I think this closes the stream once end of file is reached and saves it also
+                        writer.WriteLine(lines[currentLine - 1]);
                     }
                 }
+            }
         }
 
         //Initiates controls enabled / visible state upon start and for re-run
@@ -283,18 +199,115 @@ namespace TDSPaster
         //check to make sure the file is a valid TDS file
         private bool IsTdsFile(string fileLocation)
         {
+            //get the file name without the extension
+            string fileName = Path.GetFileNameWithoutExtension(fileLocation);
             //get the file path and remove the . in front
             string path = Path.GetExtension(fileLocation).Replace(".", "");
             //try to parse the string to see if it is an int
             int num;
             bool isNumeric = int.TryParse(path, out num);
-            //is an int
-            if (isNumeric)
+
+            bool isTdsFormat = fileName.Trim().Length == 6;
+            //has numeric file extension and 6 letter file-name
+            if (isNumeric && isTdsFormat)
             {
                 return true;
             }
-            //not an int
+            //not a TDS file
             return false;
+        }
+
+        private void PasteData()
+        {
+            try
+            {
+                //clear any previously pasted data
+                ClearPastedData();
+                //check which button is checked and set the columns accordingly. Must be done in order for pasted data to work.
+                if (singleRowRadioButton.Checked)
+                {
+                    for (int b = 1; b <= _tubeCount * 3; b++)
+                    {
+                        string tubeColumn = "Tube";
+                        dataGridView1.Columns.Add(tubeColumn + b, b.ToString());
+                    }
+                }
+
+                if (tripleRowRadioButton.Checked)
+                {
+                    for (int b = 1; b <= _tubeCount; b++)
+                    {
+                        string tubeColumn = "Tube";
+                        dataGridView1.Columns.Add(tubeColumn + b, b.ToString());
+                    }
+                }
+
+                //paste data from clipboard
+                DataObject o = (DataObject)Clipboard.GetDataObject();
+                if (o != null && o.GetDataPresent(DataFormats.Text))
+                {
+                    string[] pastedRows =
+                        Regex.Split(o.GetData(DataFormats.Text).ToString().TrimEnd("\r\n".ToCharArray()), "\r\n");
+                    int j = 0;
+
+                    //This is the code that adds the copied data to the datagrid view, not 100% on how it works.
+                    foreach (string pastedRow in pastedRows)
+                    {
+                        string[] pastedRowCells = pastedRow.Split(new char[] { '\t' });
+                        _pastedRowLength = pastedRowCells.Length;
+                        //this is needed to verify that the data pasted matches the selected file
+                        dataGridView1.Rows.Add();
+
+                        using (DataGridViewRow dataGridView1Row = dataGridView1.Rows[j])
+                        {
+                            for (int i = 0; i < pastedRowCells.Length; i++)
+                                dataGridView1Row.Cells[i].Value = pastedRowCells[i];
+                        }
+                        j++;
+                    }
+                }
+                //checks to see if the the singleColumn radio button is checked, and if so, sees if there is more than 1 row of data that was pasted. if so, it clears the data and throws an error message. this is inefficient (the check should be BEFORE the data is pasted, but it works for now. 
+                if (_isSingle && dataGridView1.Rows.Count > 1)
+                {
+                    ClearPastedData();
+                    MessageBox.Show(
+                        "The data does not seem to be in single row format. Please make sure that your data is in one single row like this:\n\nLCRLCRLCR");
+                }
+                else
+                {
+                    //enable the save button once data has been pasted
+                    SaveFileButton.Enabled = true;
+
+                    //resize the columns to fit the data entered
+                    dataGridView1.AutoResizeColumns();
+                }
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                MessageBox.Show("The data does not seem to be in triple row format. Please make sure that your data is in three rows like this:\n\nLCR\nLCR\nLCR\n\n" + ex.Message);
+                ClearPastedData();
+            }
+            catch (Exception ex)
+            {
+                //generic error message, could be improved
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        //overiding the key press event for ctrl+v to allow user to paste using the shortcut. Only works when the paste button has been enabled
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.V && e.Modifiers == Keys.Control && PasteDataButton.Enabled)
+            {
+                PasteData();
+            }
+            base.OnKeyDown(e);
+        }
+
+        private void superSecret()
+        {
+            SoundPlayer simpleSound = new SoundPlayer(Properties.Resources.superSecret);
+            simpleSound.Play();
         }
 
         //gathers the information for the elevation you want to write to
@@ -317,9 +330,10 @@ namespace TDSPaster
                 // Process input if the user clicked OK.
                 if (userClickedOk == DialogResult.OK)
                 {
-                    // clear the list view items before writing so that subsequent file selection doesn't keep populating the listbox.
+                    // clear the list view items before writing so that subsequent file selection doesn't keep populating the listbox. Also clear pasted data if any exists.
                     elevationInfoListBox.Items.Clear();
                     previewListBox.Items.Clear();
+                    ClearPastedData();
 
                     // Open the selected file to read.
                     Stream fileStream = openFileDialog1.OpenFile();
@@ -367,9 +381,9 @@ namespace TDSPaster
                         elevationInfoListBox.Items.Add("");
                         elevationInfoListBox.Items.Add("Year:\t" + _inspectionYear);
                         elevationInfoListBox.Items.Add("");
-                        elevationInfoListBox.Items.Add("Elevation: " + _elevationName1 + _elevationName2 + _elevationName3);
-                        elevationInfoListBox.Items.Add("");
                         elevationInfoListBox.Items.Add("Section:\t" + _sectionName);
+                        elevationInfoListBox.Items.Add("");
+                        elevationInfoListBox.Items.Add("Elevation: " + _elevationName1 + _elevationName2 + _elevationName3);
                         elevationInfoListBox.Items.Add("");
                         elevationInfoListBox.Items.Add("# Tubes:\t" + _tubeCount);//hastag tubes!
 
@@ -388,88 +402,26 @@ namespace TDSPaster
                 MessageBox.Show(ex.Message);
             }
         }
-
-        //copies the data from the clipboard and other housekeeping things
+        
+        //pastes the data from the clipboard and other housekeeping things
         private void PasteDataButton_Click(object sender, EventArgs e)
         {
-            try
-            {
-                //check which button is checked and set the columns accordingly. Must be done in order for pasted data to work.
-                if (singleRowRadioButton.Checked)
-                {
-                    for (int b = 1; b <= _tubeCount * 3; b++)
-                    {
-                        string tubeColumn = "Tube";
-                        dataGridView1.Columns.Add(tubeColumn + b, b.ToString());
-                    }
-                }
-
-                if (tripleRowRadioButton.Checked)
-                {
-                    for (int b = 1; b <= _tubeCount; b++)
-                    {
-                        string tubeColumn = "Tube";
-                        dataGridView1.Columns.Add(tubeColumn + b, b.ToString());
-                    }
-                }
-
-                //paste data from clipboard
-                DataObject o = (DataObject) Clipboard.GetDataObject();
-                if (o != null && o.GetDataPresent(DataFormats.Text))
-                {
-                    string[] pastedRows =
-                        Regex.Split(o.GetData(DataFormats.Text).ToString().TrimEnd("\r\n".ToCharArray()), "\r\n");
-                    int j = 0;
-
-                    //This is the code that adds the copied data to the datagrid view, not 100% on how it works.
-                    foreach (string pastedRow in pastedRows)
-                    {
-                        string[] pastedRowCells = pastedRow.Split(new char[] {'\t'});
-                        _pastedRowLength = pastedRowCells.Length;
-                        //this is needed to verify that the data pasted matches the selected file
-                        dataGridView1.Rows.Add();
-
-                        using (DataGridViewRow dataGridView1Row = dataGridView1.Rows[j])
-                        {
-                            for (int i = 0; i < pastedRowCells.Length; i++)
-                                dataGridView1Row.Cells[i].Value = pastedRowCells[i];
-                        }
-                        j++;
-                    }
-                }
-                //checks to see if the the singleColumn radio button is checked, and if so, sees if there is more than 1 row of data that was pasted. if so, it clears the data and throws an error message. this is inefficient (the check should be BEFORE the data is pasted, but it works for now. 
-                if (_isSingle && dataGridView1.Rows.Count > 1)
-                {
-                    ClearPastedData();
-                    MessageBox.Show(
-                        "The data does not seem to be in single row format. Please make sure that your data is in one single row like this:\n\nLCRLCRLCR");
-                }
-                else
-                {
-                    //enable the save button once data has been pasted
-                    SaveFileButton.Enabled = true;
-
-                    //resize the columns to fit the data entered
-                    dataGridView1.AutoResizeColumns();
-                }
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                MessageBox.Show("The data does not seem to be in triple row format. Please make sure that your data is in three rows like this:\n\nLCR\nLCR\nLCR\n\n" + ex.Message);
-                ClearPastedData();
-            }
-            catch (Exception ex)
-            {
-                //generic error message, could be improved
-                MessageBox.Show(ex.Message);
-            }
+            PasteData();
         }
 
         //data from the datagridview is stored in an array and written to the TDS file the user has selected.
         private void SaveFileButton_Click(object sender, EventArgs e)
-        {           
+        {
             try
             {
+                if (superSecretCheckbox.Checked)
+                {
+                    superSecret();
+                }
+
+                //message if data is successfully transferred
+                string successMessage = "Successfully pasted data into:\n\n" + _millName + _location + "\n" + _boilerName + "\n" +_elevationName1 + _elevationName2 + _elevationName3 + "\n" + _inspectionYear;
+
                 //This large block of code executes if the user selects the triple row radio button
                 if (tripleRowRadioButton.Checked)
                 {
@@ -491,7 +443,7 @@ namespace TDSPaster
 
                     WriteTdsFile(_fileLocation, readingValueArray);
 
-                    MessageBox.Show("If nothing caught fire the file was transfered!");
+                    MessageBox.Show(successMessage);
 
                     //Reset the tube count
                     _tubeCount = 0;
@@ -535,7 +487,7 @@ namespace TDSPaster
                     //writes the file in the TDS format
                     WriteTdsFile(_fileLocation, readingValueArray);
 
-                    MessageBox.Show("If nothing caught fire the file was transfered!");
+                    MessageBox.Show(successMessage);
 
                     //Reset the tube count
                     _tubeCount = 0;
@@ -573,7 +525,7 @@ namespace TDSPaster
             colCenterLabel.Visible = false;
             colRightLabel.Visible = false;
 
-            //todo add comment here
+            //when triple radio button is selected, set this bool to false. used to make sure user doesn't paste single row data when triple row is expected.
             _isSingle = false;
         }
 
@@ -588,7 +540,7 @@ namespace TDSPaster
             colCenterLabel.Visible = true;
             colRightLabel.Visible = true;
 
-            //todo add comment here
+            //when single radio button is selected, set this bool to false. used to make sure user doesn't paste triple row data when single row is expected.
             _isSingle = true;
         }
 
@@ -606,7 +558,7 @@ namespace TDSPaster
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void clearPastedButton_Click(object sender, EventArgs e)
         {
             try
             {
