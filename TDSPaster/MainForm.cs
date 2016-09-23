@@ -74,15 +74,28 @@ namespace TDSPaster
             string quote = "\"";
             string spaceQuote = " \"";
             string commentQuote = "\"   ";
+            string singleZero = "0";
+            string doubleZero = "00";
             //if the data is numbers with a single character the if statement will execute.           
             if (Regex.IsMatch(readingValue, @"\d"))
             {
                 //todo put the trimming functions in their own method
                 readingValue = readingValue.TrimStart('0'); //getting rid of any leading zeros
                 readingValue = readingValue.Trim(charsToTrim);
-                readingValue = quote + readingValue + spaceQuote;
-            }
-
+                int count = readingValue.Length;
+                if (count == 3)
+                {
+                    readingValue = quote + readingValue + spaceQuote;
+                }
+                if (count == 2)
+                {
+                    readingValue = quote + singleZero + readingValue + spaceQuote;
+                }
+                if (count == 1)
+                {
+                    readingValue = quote + doubleZero + readingValue + spaceQuote;
+                }
+                }
             //check if the reading contains TDS comments.
             else if (hasTdsComments)
             {
