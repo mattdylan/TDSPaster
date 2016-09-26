@@ -179,7 +179,6 @@ namespace TDSPaster
         //Initiates controls enabled / visible state upon start and for re-run
         private void InitControls()
         {
-
             PasteDataButton.Enabled = false;
             SaveFileButton.Enabled = false;
             rowLeftLabel.Visible = false;
@@ -195,28 +194,7 @@ namespace TDSPaster
             dataGridView1.Rows.Clear();
             dataGridView1.Columns.Clear();
         }
-
-        //check to make sure the file is a valid TDS file
-        private bool IsTdsFile(string fileLocation)
-        {
-            //get the file name without the extension
-            string fileName = Path.GetFileNameWithoutExtension(fileLocation);
-            //get the file path and remove the . in front
-            string path = Path.GetExtension(fileLocation).Replace(".", "");
-            //try to parse the string to see if it is an int
-            int num;
-            bool isNumeric = int.TryParse(path, out num);
-
-            bool isTdsFormat = fileName.Trim().Length == 6;
-            //has numeric file extension and 6 letter file-name
-            if (isNumeric && isTdsFormat)
-            {
-                return true;
-            }
-            //not a TDS file
-            return false;
-        }
-
+        
         private void PasteData()
         {
             try
@@ -306,8 +284,8 @@ namespace TDSPaster
 
         private void superSecret()
         {
-            SoundPlayer simpleSound = new SoundPlayer(Properties.Resources.superSecret);
-            simpleSound.Play();
+            SoundPlayer superSecret = new SoundPlayer(Properties.Resources.superSecret);
+            superSecret.Play();
         }
 
         //gathers the information for the elevation you want to write to
@@ -338,7 +316,7 @@ namespace TDSPaster
                     // Open the selected file to read.
                     Stream fileStream = openFileDialog1.OpenFile();
 
-                    using (StreamReader reader = new StreamReader(fileStream))
+                    using (new StreamReader(fileStream))
                     {
                         string filename = openFileDialog1.FileName;
                         _fileLocation = filename;
@@ -346,7 +324,7 @@ namespace TDSPaster
                     fileStream.Close();
 
                     //check to make sure that the file path is not null and that the file is a valid TDS file
-                    if (_fileLocation != null && IsTdsFile(_fileLocation))
+                    if (_fileLocation != null && DataValidation.IsTdsFile(_fileLocation))
                     {
                         PasteDataButton.Enabled = true;
 
@@ -358,11 +336,10 @@ namespace TDSPaster
                         {
                             counter++;
                         }
-                        int finalTubeCount = (counter - 18) / 3;
-                        _tubeCount = finalTubeCount;
+                        _tubeCount = (counter - 18) / 3;
                         reader3.Close();
 
-                        StreamReader reader2 = new StreamReader(_fileLocation);
+                    StreamReader reader2 = new StreamReader(_fileLocation);
                         counter = 0;
 
                         //This is grabbing the informaion about the elevation that has been selected to be overwritten
@@ -385,7 +362,7 @@ namespace TDSPaster
                         elevationInfoListBox.Items.Add("");
                         elevationInfoListBox.Items.Add("Elevation: " + _elevationName1 + _elevationName2 + _elevationName3);
                         elevationInfoListBox.Items.Add("");
-                        elevationInfoListBox.Items.Add("# Tubes:\t" + _tubeCount);//hastag tubes!
+                        elevationInfoListBox.Items.Add("# Tubes:\t" + _tubeCount);//hashtag tubes!
 
                         reader2.Close(); 
                     }
@@ -427,7 +404,7 @@ namespace TDSPaster
                 {
                     //validating that the selected file tube count matches the pasted data, for more info check methods above
                     int tubeCompare = TubeCountComparison();
-                    if (tubeCompare == 2) { string errMSG = ErrMsgTubeCount(tubeCompare); MessageBox.Show(errMSG); return; }
+                    if (tubeCompare == 2) { string errMsg = ErrMsgTubeCount(tubeCompare); MessageBox.Show(errMsg); return; }
                     
                     //creating the array, this is dynamic, the array will match the number of columns and rows
                     string[,] readingValueArray = new string[dataGridView1.Rows.Count, dataGridView1.Columns.Count];
